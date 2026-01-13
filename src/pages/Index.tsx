@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import Header from '@/components/Header';
+import PredictionCard from '@/components/PredictionCard';
+import AuthDialog from '@/components/AuthDialog';
+import AdminPanel from '@/components/AdminPanel';
 
 const Index = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -120,62 +121,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-background/80 border-b border-border">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
-                <Icon name="TrendingUp" className="text-white" size={24} />
-              </div>
-              <h1 className="text-2xl font-bold">BetPro</h1>
-            </div>
-
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="#home" className="hover:text-primary transition-colors font-medium">Главная</a>
-              <a href="#predictions" className="hover:text-primary transition-colors font-medium">Прогнозы</a>
-              <a href="#rating" className="hover:text-primary transition-colors font-medium">Рейтинг</a>
-              <a href="#premium" className="hover:text-primary transition-colors font-medium">Премиум</a>
-              <a href="#contacts" className="hover:text-primary transition-colors font-medium">Контакты</a>
-            </nav>
-
-            <div className="flex items-center gap-3">
-              {currentUser ? (
-                <>
-                  <Button variant="ghost" size="icon">
-                    <Icon name="Bell" size={20} />
-                  </Button>
-                  <Button variant="ghost" className="gap-2">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="bg-primary text-white text-sm">
-                        {currentUser.name[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden md:inline">{currentUser.name}</span>
-                  </Button>
-                  {currentUser.isAdmin && (
-                    <Button
-                      onClick={() => setIsAdminPanelOpen(true)}
-                      className="gradient-accent hover:opacity-90 transition-opacity"
-                    >
-                      <Icon name="Shield" className="mr-2" size={18} />
-                      Админ
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Button variant="ghost" onClick={() => handleAuth('login')}>
-                    Вход
-                  </Button>
-                  <Button className="gradient-primary hover:opacity-90 transition-opacity" onClick={() => handleAuth('register')}>
-                    Регистрация
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header 
+        currentUser={currentUser} 
+        onAuthClick={handleAuth}
+        onAdminClick={() => setIsAdminPanelOpen(true)}
+      />
 
       <section id="home" className="relative overflow-hidden py-20">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/10"></div>
@@ -244,70 +194,12 @@ const Index = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {mockPredictions.map((pred) => (
-              <Card key={pred.id} className="p-6 bg-card hover:border-primary/50 transition-all group">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">{pred.sport}</span>
-                      <Badge variant="outline" className={getStatusColor(pred.status)}>
-                        {getStatusText(pred.status)}
-                      </Badge>
-                      {pred.isPremium && (
-                        <Badge className="gradient-accent border-0">
-                          <Icon name="Crown" size={14} className="mr-1" />
-                          Premium
-                        </Badge>
-                      )}
-                    </div>
-                    <h4 className="text-xl font-bold mb-1 group-hover:text-primary transition-colors">
-                      {pred.match}
-                    </h4>
-                    <p className="text-sm text-muted-foreground">{pred.league}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground mb-1">Коэффициент</div>
-                    <div className="text-2xl font-bold text-primary">{pred.odds}</div>
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 rounded-lg p-4 mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Прогноз</span>
-                    <span className="font-bold text-lg">{pred.prediction}</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">{pred.analysis}</p>
-                </div>
-
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div className="flex items-center gap-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="gradient-primary text-white font-bold">
-                        {pred.capper.substring(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-semibold">{pred.capper}</div>
-                      <div className="text-sm text-green-400">Винрейт {pred.capperWinRate}%</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="gap-1">
-                      <Icon name="Clock" size={14} />
-                      {pred.time}
-                    </Badge>
-                    {pred.isPremium ? (
-                      <Button className="gradient-accent hover:opacity-90">
-                        <Icon name="Lock" className="mr-2" size={16} />
-                        Открыть
-                      </Button>
-                    ) : (
-                      <Button className="gradient-primary hover:opacity-90">
-                        Подробнее
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </Card>
+              <PredictionCard
+                key={pred.id}
+                prediction={pred}
+                getStatusColor={getStatusColor}
+                getStatusText={getStatusText}
+              />
             ))}
           </div>
         </div>
@@ -426,130 +318,19 @@ const Index = () => {
         </div>
       </footer>
 
-      <Dialog open={isAuthOpen} onOpenChange={setIsAuthOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">
-              {authMode === 'login' ? 'Вход в аккаунт' : 'Регистрация'}
-            </DialogTitle>
-            <DialogDescription>
-              {authMode === 'login' 
-                ? 'Введите свои данные для входа' 
-                : 'Создайте аккаунт для доступа к прогнозам'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            {authMode === 'register' && (
-              <div className="space-y-2">
-                <Label htmlFor="name">Имя</Label>
-                <Input id="name" placeholder="Ваше имя" />
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="email@example.com" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
-              <Input id="password" type="password" placeholder="••••••••" />
-            </div>
-            <Button 
-              className="w-full gradient-primary hover:opacity-90" 
-              size="lg"
-              onClick={handleLogin}
-            >
-              {authMode === 'login' ? 'Войти' : 'Зарегистрироваться'}
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full"
-              onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
-            >
-              {authMode === 'login' ? 'Нет аккаунта? Зарегистрируйтесь' : 'Уже есть аккаунт? Войдите'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AuthDialog
+        isOpen={isAuthOpen}
+        onOpenChange={setIsAuthOpen}
+        authMode={authMode}
+        onAuthModeChange={setAuthMode}
+        onLogin={handleLogin}
+      />
 
-      <Dialog open={isAdminPanelOpen} onOpenChange={setIsAdminPanelOpen}>
-        <DialogContent className="sm:max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl flex items-center gap-2">
-              <Icon name="Shield" className="text-accent" size={28} />
-              Панель администратора
-            </DialogTitle>
-            <DialogDescription>
-              Управление прогнозами, пользователями и контентом платформы
-            </DialogDescription>
-          </DialogHeader>
-          <Tabs defaultValue="predictions" className="py-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="predictions">Прогнозы</TabsTrigger>
-              <TabsTrigger value="users">Пользователи</TabsTrigger>
-              <TabsTrigger value="settings">Настройки</TabsTrigger>
-            </TabsList>
-            <TabsContent value="predictions" className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h4 className="font-semibold">Управление прогнозами</h4>
-                <Button className="gradient-primary">
-                  <Icon name="Plus" className="mr-2" size={18} />
-                  Добавить прогноз
-                </Button>
-              </div>
-              <div className="space-y-2">
-                {mockPredictions.slice(0, 3).map((pred) => (
-                  <Card key={pred.id} className="p-4 flex items-center justify-between">
-                    <div>
-                      <div className="font-semibold">{pred.match}</div>
-                      <div className="text-sm text-muted-foreground">{pred.prediction}</div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
-                        <Icon name="Edit" size={16} />
-                      </Button>
-                      <Button size="sm" variant="destructive">
-                        <Icon name="Trash2" size={16} />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-            <TabsContent value="users" className="space-y-4">
-              <h4 className="font-semibold">Статистика пользователей</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="p-4">
-                  <div className="text-3xl font-bold text-primary mb-1">10,234</div>
-                  <div className="text-sm text-muted-foreground">Всего пользователей</div>
-                </Card>
-                <Card className="p-4">
-                  <div className="text-3xl font-bold text-accent mb-1">1,456</div>
-                  <div className="text-sm text-muted-foreground">Premium подписки</div>
-                </Card>
-              </div>
-            </TabsContent>
-            <TabsContent value="settings" className="space-y-4">
-              <h4 className="font-semibold">Настройки платформы</h4>
-              <Card className="p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Push-уведомления</div>
-                    <div className="text-sm text-muted-foreground">Отправка уведомлений пользователям</div>
-                  </div>
-                  <Button variant="outline">Настроить</Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">Модерация прогнозов</div>
-                    <div className="text-sm text-muted-foreground">Автоматическая проверка контента</div>
-                  </div>
-                  <Button variant="outline">Настроить</Button>
-                </div>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
+      <AdminPanel
+        isOpen={isAdminPanelOpen}
+        onOpenChange={setIsAdminPanelOpen}
+        mockPredictions={mockPredictions}
+      />
     </div>
   );
 };
